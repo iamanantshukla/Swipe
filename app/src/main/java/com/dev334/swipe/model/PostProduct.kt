@@ -1,11 +1,13 @@
 package com.dev334.swipe.model
 
-import java.io.File
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
+import okhttp3.ResponseBody
 
-data class PostProduct (
-    val product_name: String? = null,
-    val product_type: String? = null,
-    val price: String? = null,
-    val tax: String? = null,
-    //val files: List<File?>? = null
+data class PostProduct(
+    val name: RequestBody? = null,
+    val type: RequestBody? = null,
+    val price: RequestBody? = null,
+    val tax: RequestBody? = null,
+    val file: MultipartBody.Part? = null
 )

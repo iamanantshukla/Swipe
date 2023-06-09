@@ -1,9 +1,12 @@
 package com.dev334.swipe.view
 
+import android.app.AlertDialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import com.dev334.swipe.R
 import com.dev334.swipe.databinding.ActivityMainBinding
@@ -11,6 +14,8 @@ import com.dev334.swipe.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding;
+    private lateinit var loadingDialog: View
+    private lateinit var loadingDialogInstance: AlertDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,4 +50,24 @@ class MainActivity : AppCompatActivity() {
         transaction.commit()
     }
 
+    fun openHomeFragment() {
+        replaceFragment(HomeFragment())
+        binding.floatingActionButton.visibility = View.VISIBLE
+    }
+
+    fun showLoading() {
+        //Inflate the dialog as custom view
+        loadingDialog = LayoutInflater.from(this).inflate(R.layout.loading_layout, null)
+
+        //AlertDialogBuilder
+        val loadingDialogBuilder = AlertDialog.Builder(this).setView(loadingDialog)
+
+        //show dialog
+        loadingDialogInstance = loadingDialogBuilder.show()
+        loadingDialogInstance.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+    }
+
+    fun dismissLoading(){
+        loadingDialogInstance.dismiss()
+    }
 }

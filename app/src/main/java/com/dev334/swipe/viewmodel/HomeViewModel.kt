@@ -17,4 +17,8 @@ class HomeViewModel: ViewModel() {
         return productLiveData
     }
 
+    fun addProduct(postProduct: PostProduct) : MutableLiveData<ApiResponse>? {
+        responseBody = ProductRepository.postProductApiCall(postProduct)
+        return responseBody
+    }
 }

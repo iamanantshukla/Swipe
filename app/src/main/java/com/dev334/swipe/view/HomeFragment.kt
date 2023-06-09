@@ -1,6 +1,9 @@
 package com.dev334.swipe.view
 
+import android.app.AlertDialog
 import android.app.ProgressDialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -12,6 +15,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
+import com.dev334.swipe.R
 import com.dev334.swipe.adapter.ProductAdapter
 import com.dev334.swipe.databinding.FragmentHomeBinding
 import com.dev334.swipe.model.Product
@@ -24,6 +28,8 @@ class HomeFragment : Fragment() {
     private lateinit var binding: FragmentHomeBinding
     private lateinit var products: ArrayList<Product>
     private lateinit var productAdapter: ProductAdapter
+    private lateinit var loadingDialog: View
+    private lateinit var loadingDialogInstance: AlertDialog
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,16 +39,13 @@ class HomeFragment : Fragment() {
         val fragmentBinding = FragmentHomeBinding.inflate(inflater, container, false)
         binding = fragmentBinding
 
-        val progressDialog = ProgressDialog(context)
-        progressDialog.setTitle("Loading Products")
-        progressDialog.setMessage("Loading, please wait")
-        progressDialog.show()
+        (activity as MainActivity?)!!.showLoading()
 
         prepareRecyclerView()
-        //testingPopulate()
+
         sharedViewModel.getProducts()!!.observe(viewLifecycleOwner, Observer { productList ->
             Log.i("FetchedProduct", "onCreate: Successful")
-            progressDialog.dismiss()
+            (activity as MainActivity?)!!.dismissLoading()
             products = productList as ArrayList<Product>;
             productAdapter.setProductList(products)
         })
@@ -89,16 +92,20 @@ class HomeFragment : Fragment() {
         }
     }
 
-    private fun testingPopulate() {
-        val product1 = Product("", 100.0, "Test1", "type1",50.0)
-        val product2 = Product("", 101.0, "Xest2", "type2",60.0)
-        val product3 = Product("", 102.0, "Test3", "type3",70.0)
-        val product5 = Product("", 102.0, "Aest3", "type3",70.0)
-        val product4 = Product("", 102.0, "Best3", "type3",70.0)
-        val product6 = Product("", 102.0, "Aest3", "type3",70.0)
-        var productsTest = arrayListOf(product1, product2, product3, product4, product5, product6)
-        products = productsTest;
-        productAdapter.setProductList(products)
+    private fun showLoading() {
+        //Inflate the dialog as custom view
+        loadingDialog = LayoutInflater.from(activity).inflate(R.layout.loading_layout, null)
+
+        //AlertDialogBuilder
+        val loadingDialogBuilder = AlertDialog.Builder(activity).setView(loadingDialog)
+
+        //show dialog
+        loadingDialogInstance = loadingDialogBuilder.show()
+        loadingDialogInstance.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+    }
+
+    private fun dismissLoading(){
+        loadingDialogInstance.dismiss()
     }
 }
 

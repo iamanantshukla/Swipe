@@ -36,4 +36,24 @@ object ProductRepository {
         return productLiveData
     }
 
+    fun postProductApiCall(postProduct: PostProduct): MutableLiveData<ApiResponse> {
+        RetrofitInstance.api.addProducts(postProduct.name,
+            postProduct.type, postProduct.price, postProduct.tax, postProduct.file).enqueue(object : Callback<ApiResponse> {
+            override fun onResponse(call: Call<ApiResponse>, response: retrofit2.Response<ApiResponse>) {
+                if(response.body()!=null){
+                    Log.i(ProductRepository.TAG, "onResponse: "+ response.body())
+                    responseBody.value = response.body()
+                }else{
+                    Log.i(ProductRepository.TAG, "onResponse: Response Empty: $response")
+                }
+            }
+
+            override fun onFailure(call: Call<ApiResponse>, t: Throwable) {
+                Log.i(ProductRepository.TAG, "onFailure: "+t.message)
+            }
+
+        })
+        return responseBody
+    }
+
 }

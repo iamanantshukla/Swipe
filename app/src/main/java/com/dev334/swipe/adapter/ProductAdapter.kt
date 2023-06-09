@@ -34,8 +34,8 @@ class ProductAdapter : RecyclerView.Adapter<ProductAdapter.ViewHolder>() {
         Log.i("AdapterDebugging", "onBindViewHolder: "+productList[position].product_name)
         holder.binding.textProductName.text = productList[position].product_name;
         holder.binding.textProductType.text = productList[position].product_type;
-        //holder.binding.textTax.text = productList[position].tax.toString();
-        holder.binding.textProductPrice.text = "₹ " + productList[position].price.toString();
+        holder.binding.textProductPrice.text = "₹ " + productList[position].price.toString()
+        holder.binding.textProductTax.text = "+ " + productList[position].tax.toString() + "% GST";
         val url: String? = productList[position].image
         if(!url.isNullOrEmpty()) {
             Glide.with(holder.itemView)

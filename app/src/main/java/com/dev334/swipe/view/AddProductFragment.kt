@@ -1,9 +1,6 @@
 package com.dev334.swipe.view
 
-import android.app.ProgressDialog
-import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -17,19 +14,14 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import com.dev334.swipe.databinding.FragmentAddProductBinding
 import com.dev334.swipe.model.PostProduct
-import com.dev334.swipe.repository.ProductRepository
-import com.dev334.swipe.retrofit.RetrofitInstance
 import com.dev334.swipe.viewmodel.HomeViewModel
+import com.yalantis.ucrop.UCrop
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.MultipartBody.Part.Companion.createFormData
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Callback
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -52,64 +44,56 @@ class AddProductFragment : Fragment() {
             openGallery()
         }
 
+        binding.buttonClose.setOnClickListener{
+            (activity as MainActivity?)!!.openHomeFragment()
+        }
+
         binding.buttonDone.setOnClickListener{
-
-            var price: Double? = binding.editProductPrice.text.toString().toDoubleOrNull()
-            var tax: Double? = binding.editProductTax.text.toString().toDoubleOrNull()
-
-            val product = PostProduct(
-                binding.editProductName.text.toString(),
-                binding.editProductType.text.toString(),
-                binding.editProductPrice.text.toString(),
-                binding.editProductTax.text.toString(),
-                //arrayListOf(file)
-            )
-
-            if(checkProductDetails(product, price, tax)){
-                Log.i("AddProductDebugging", "onCreateView: Success $product")
-                val map: MutableMap<String, String> = mutableMapOf()
-                var name: RequestBody = product.product_name!!.toRequestBody("text/plain".toMediaType())
-                var type: RequestBody = product.product_type!!.toRequestBody("text/plain".toMediaType())
-                var price: RequestBody = product.price!!.toRequestBody("text/plain".toMediaType())
-                var tax: RequestBody = product.tax!!.toRequestBody("text/plain".toMediaType())
-                var multipartBody: MultipartBody.Part? = null
-                if(file!=null) {
-                    var requestBody: RequestBody =
-                        file?.path!!.toRequestBody("multipart/form-data".toMediaTypeOrNull())
-                    multipartBody = createFormData("files[]", file?.name, file!!.asRequestBody());
-                }
-                //var multipartBody: MultipartBody.Part = createFormData("files[]","product.png", requestBody);
-                Log.i("ApiDebuggingImage", "onCreateView: $multipartBody")
-                addProduct(name,type,price,tax,multipartBody)
-            }
+            (activity as MainActivity?)!!.showLoading()
+            validateAndPostProduct()
         }
 
         return binding.root
     }
 
-    private fun addProduct(name: RequestBody, type: RequestBody, price:RequestBody,tax: RequestBody, multipartBody: MultipartBody.Part?) {
-        val progressDialog = ProgressDialog(context)
-        progressDialog.setTitle("Add Product")
-        progressDialog.setMessage("Uploading, please wait")
-        progressDialog.show()
-        RetrofitInstance.api.addProducts(name, type, price, tax,multipartBody).enqueue(object : Callback<ResponseBody> {
-            override fun onResponse(call: Call<ResponseBody>, response: retrofit2.Response<ResponseBody>) {
-                if(response.body()!=null){
-                    Toast.makeText(context, "Product added successfully",2).show()
-                    Log.i(ProductRepository.TAG, "onResponse: "+ response.body())
-                }else{
-                    Log.i(ProductRepository.TAG, "onResponse: Response Empty"+ response)
+    // validate details and call post product
+    private fun validateAndPostProduct() {
+        var price: Double? = binding.editProductPrice.text.toString().toDoubleOrNull()
+        var tax: Double? = binding.editProductTax.text.toString().toDoubleOrNull()
+        var name: String? = binding.editProductName.text.toString()
+        var type: String? = binding.editProductType.text.toString()
+        var price_string: String? = binding.editProductPrice.text.toString()
+        var tax_string: String? = binding.editProductTax.text.toString()
+
+        if(checkProductDetails(name, type, price, tax)){
+
+            //converting values into request body
+            var name: RequestBody? = name!!.toRequestBody("text/plain".toMediaType())
+            var type: RequestBody? = type!!.toRequestBody("text/plain".toMediaType())
+            var price: RequestBody? = price_string!!.toRequestBody("text/plain".toMediaType())
+            var tax: RequestBody? = tax_string!!.toRequestBody("text/plain".toMediaType())
+            var multipartBody: MultipartBody.Part? = null
+
+            if(file!=null) {
+                multipartBody = createFormData("files[]", file?.name, file!!.asRequestBody());
+            }
+
+            //Request body of product
+            var postProduct = PostProduct(name,type,price,tax,multipartBody)
+
+            //calling the share view model add product functionality
+            sharedViewModel.addProduct(postProduct)!!.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+                Toast.makeText(context, it.message, 2).show();
+                (activity as MainActivity?)!!.showLoading()
+                if(it.success == true){
+                    binding.editProductPrice.text.clear()
+                    binding.editProductName.text.clear()
+                    binding.editProductTax.text.clear()
+                    binding.editProductType.text.clear()
+                    file = null;
                 }
-                progressDialog.dismiss()
-            }
-
-            override fun onFailure(call: Call<ResponseBody>, t: Throwable) {
-                Log.i(ProductRepository.TAG, "onFailure: "+t.message)
-                Toast.makeText(context, "Unable to reach our server",2).show()
-                progressDialog.dismiss()
-            }
-
-        })
+            })
+        }
     }
 
     private fun openGallery() {
@@ -118,23 +102,6 @@ class AddProductFragment : Fragment() {
         )
         startActivityForResult(Intent.createChooser(galleryIntent,
             "Select Image From Gallery "),0)
-    }
-
-    private fun cropImages(uri: Uri) {
-        /**set crop image*/
-        try {
-            val cropIntent = Intent("com.android.camera.action.CROP")
-            cropIntent.setDataAndType(uri,"image/*")
-            cropIntent.putExtra("crop",true)
-            cropIntent.putExtra("aspectX",1)
-            cropIntent.putExtra("aspectY",1)
-            cropIntent.putExtra("scaleUpIfNeeded",true)
-            cropIntent.putExtra("return-data",true)
-            startActivityForResult(cropIntent,1)
-
-        }catch (e: ActivityNotFoundException){
-            e.printStackTrace()
-        }
     }
 
     @Throws(IOException::class)
@@ -149,8 +116,6 @@ class AddProductFragment : Fragment() {
             storageDir /* directory */
         )
 
-        // Save a file: path for use with ACTION_VIEW intents
-        //mCurrentPhotoPath = image.absolutePath
         return image
     }
 
@@ -168,12 +133,16 @@ class AddProductFragment : Fragment() {
         if (requestCode == 0){
             if (data != null){
                 val uri = data.data!!
-                cropImages(uri)
+                UCrop.of(
+                    uri,
+                    Uri.fromFile(File(context!!.cacheDir, "IMG_" + System.currentTimeMillis()))
+                ).withAspectRatio(1F, 1F)
+                    .start(context!!, this)
             }
         }
-        else if (requestCode == 1){
+        else if (requestCode == UCrop.REQUEST_CROP){
             if (data != null){
-                val uri = data.data!!
+                val uri = UCrop.getOutput(data)
                 try {
                     // Creating file
                     try {
@@ -182,7 +151,7 @@ class AddProductFragment : Fragment() {
                         Log.d("ApiCallDebugging", "Error occurred while creating the file")
                     }
                     val inputStream: InputStream? =
-                        activity!!.contentResolver.openInputStream(uri)
+                        activity!!.contentResolver.openInputStream(uri!!)
                     val fileOutputStream = FileOutputStream(file)
                     // Copying
                     if (inputStream != null) {
@@ -198,11 +167,11 @@ class AddProductFragment : Fragment() {
         }
     }
 
-    private fun checkProductDetails(product: PostProduct, price: Double?, tax: Double?): Boolean {
-        if(product.product_name.isNullOrEmpty()){
+    private fun checkProductDetails(name: String?, type: String?, price: Double?, tax: Double?): Boolean {
+        if(name.isNullOrEmpty()){
             binding.editProductName.error = "Required Field"
             return false;
-        }else if(product.product_type.isNullOrEmpty()){
+        }else if(type.isNullOrEmpty()){
             binding.editProductType.error = "Required Field"
             return false;
         }else if(price == null){
