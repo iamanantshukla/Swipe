@@ -84,7 +84,7 @@ class AddProductFragment : Fragment() {
             val viewModel = getViewModel<HomeViewModel> ()
             viewModel.addProduct(postProduct)!!.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
                 Toast.makeText(context, it.message, 2).show();
-                (activity as MainActivity?)!!.showLoading()
+                (activity as MainActivity?)!!.dismissLoading()
                 if(it.success == true){
                     binding.editProductPrice.text.clear()
                     binding.editProductName.text.clear()
