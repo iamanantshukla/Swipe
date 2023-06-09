@@ -20,11 +20,12 @@ import com.dev334.swipe.adapter.ProductAdapter
 import com.dev334.swipe.databinding.FragmentHomeBinding
 import com.dev334.swipe.model.Product
 import com.dev334.swipe.viewmodel.HomeViewModel
+import org.koin.androidx.viewmodel.ext.android.getViewModel
 
 
 class HomeFragment : Fragment() {
 
-    private val sharedViewModel by activityViewModels<HomeViewModel>()
+    //private val sharedViewModel by activityViewModels<HomeViewModel>()
     private lateinit var binding: FragmentHomeBinding
     private lateinit var products: ArrayList<Product>
     private lateinit var productAdapter: ProductAdapter
@@ -42,8 +43,8 @@ class HomeFragment : Fragment() {
         (activity as MainActivity?)!!.showLoading()
 
         prepareRecyclerView()
-
-        sharedViewModel.getProducts()!!.observe(viewLifecycleOwner, Observer { productList ->
+        val viewModel = getViewModel<HomeViewModel> ()
+        viewModel.getProducts()!!.observe(viewLifecycleOwner, Observer { productList ->
             Log.i("FetchedProduct", "onCreate: Successful")
             (activity as MainActivity?)!!.dismissLoading()
             products = productList as ArrayList<Product>;

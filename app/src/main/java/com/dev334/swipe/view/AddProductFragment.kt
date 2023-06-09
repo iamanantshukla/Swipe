@@ -22,6 +22,7 @@ import okhttp3.MultipartBody.Part.Companion.createFormData
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.koin.androidx.viewmodel.ext.android.getViewModel
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -29,7 +30,7 @@ import java.util.*
 
 class AddProductFragment : Fragment() {
 
-    private val sharedViewModel by activityViewModels<HomeViewModel>()
+    //private val sharedViewModel by activityViewModels<HomeViewModel>()
     private lateinit var binding: FragmentAddProductBinding
     private var file: File? = null;
 
@@ -82,7 +83,8 @@ class AddProductFragment : Fragment() {
             var postProduct = PostProduct(name,type,price,tax,multipartBody)
 
             //calling the share view model add product functionality
-            sharedViewModel.addProduct(postProduct)!!.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+            val viewModel = getViewModel<HomeViewModel> ()
+            viewModel.addProduct(postProduct)!!.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
                 Toast.makeText(context, it.message, 2).show();
                 (activity as MainActivity?)!!.showLoading()
                 if(it.success == true){
