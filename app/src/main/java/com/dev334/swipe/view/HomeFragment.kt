@@ -25,7 +25,6 @@ import org.koin.androidx.viewmodel.ext.android.getViewModel
 
 class HomeFragment : Fragment() {
 
-    //private val sharedViewModel by activityViewModels<HomeViewModel>()
     private lateinit var binding: FragmentHomeBinding
     private lateinit var products: ArrayList<Product>
     private lateinit var productAdapter: ProductAdapter

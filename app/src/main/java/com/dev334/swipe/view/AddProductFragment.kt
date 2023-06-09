@@ -11,7 +11,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import com.dev334.swipe.databinding.FragmentAddProductBinding
 import com.dev334.swipe.model.PostProduct
 import com.dev334.swipe.viewmodel.HomeViewModel
@@ -30,7 +29,6 @@ import java.util.*
 
 class AddProductFragment : Fragment() {
 
-    //private val sharedViewModel by activityViewModels<HomeViewModel>()
     private lateinit var binding: FragmentAddProductBinding
     private var file: File? = null;
 
