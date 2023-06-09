@@ -1,7 +1,9 @@
 package com.dev334.swipe.view
 
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import com.dev334.swipe.R
 import com.dev334.swipe.databinding.ActivityMainBinding
@@ -17,6 +19,7 @@ class MainActivity : AppCompatActivity() {
 
         binding.floatingActionButton.setOnClickListener{
             replaceFragment(AddProductFragment())
+            binding.floatingActionButton.visibility = View.GONE
         }
 
     }

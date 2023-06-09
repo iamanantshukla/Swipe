@@ -2,12 +2,12 @@ package com.dev334.swipe.model
 
 import java.util.*
 
-class Product {
+data class Product (
 
-    private val image: String? = null
-    private val price: Double? = null
-    private val product_name: String? = null
-    private val product_type: String? = null
-    private val tax: Double? = null
+    val image: String? = null,
+    val price: Double? = null,
+    val product_name: String? = null,
+    val product_type: String? = null,
+    val tax: Double? = null
 
-}
+)
