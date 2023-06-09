@@ -9,8 +9,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.dev334.swipe.R
 import com.dev334.swipe.databinding.FragmentAddProductBinding
 import com.dev334.swipe.model.PostProduct
 import com.dev334.swipe.viewmodel.HomeViewModel
@@ -27,10 +31,12 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 
-class AddProductFragment : Fragment() {
+class AddProductFragment : Fragment(), AdapterView.OnItemSelectedListener {
 
     private lateinit var binding: FragmentAddProductBinding
     private var file: File? = null;
+    private var productType: String? = "Others";
+    private lateinit var productTypes: Array<String>
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -48,8 +54,20 @@ class AddProductFragment : Fragment() {
         }
 
         binding.buttonDone.setOnClickListener{
-            (activity as MainActivity?)!!.showLoading()
             validateAndPostProduct()
+        }
+
+        //Product type spinner
+        productTypes = resources.getStringArray(R.array.product_type);
+        var arrayAdapter = ArrayAdapter(context!!, R.layout.spinner_right_aligned, productTypes)
+        arrayAdapter.setDropDownViewResource(R.layout.spinner_right_aligned)
+        val ll = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
+        with(binding.spinner)
+        {
+            adapter = arrayAdapter
+            setSelection(0, false)
+            layoutParams = ll
+            onItemSelectedListener = this@AddProductFragment
         }
 
         return binding.root
@@ -57,14 +75,15 @@ class AddProductFragment : Fragment() {
 
     // validate details and call post product
     private fun validateAndPostProduct() {
+        (activity as MainActivity?)!!.showLoading()
         var price: Double? = binding.editProductPrice.text.toString().toDoubleOrNull()
         var tax: Double? = binding.editProductTax.text.toString().toDoubleOrNull()
         var name: String? = binding.editProductName.text.toString()
-        var type: String? = binding.editProductType.text.toString()
+        var type: String? = productType
         var price_string: String? = binding.editProductPrice.text.toString()
         var tax_string: String? = binding.editProductTax.text.toString()
 
-        if(checkProductDetails(name, type, price, tax)){
+        if(checkProductDetails(name, price, tax)){
 
             //converting values into request body
             var name: RequestBody? = name!!.toRequestBody("text/plain".toMediaType())
@@ -89,10 +108,11 @@ class AddProductFragment : Fragment() {
                     binding.editProductPrice.text.clear()
                     binding.editProductName.text.clear()
                     binding.editProductTax.text.clear()
-                    binding.editProductType.text.clear()
                     file = null;
                 }
             })
+        }else{
+            (activity as MainActivity?)!!.dismissLoading()
         }
     }
 
@@ -167,12 +187,9 @@ class AddProductFragment : Fragment() {
         }
     }
 
-    private fun checkProductDetails(name: String?, type: String?, price: Double?, tax: Double?): Boolean {
+    private fun checkProductDetails(name: String?, price: Double?, tax: Double?): Boolean {
         if(name.isNullOrEmpty()){
             binding.editProductName.error = "Required Field"
-            return false;
-        }else if(type.isNullOrEmpty()){
-            binding.editProductType.error = "Required Field"
             return false;
         }else if(price == null){
             binding.editProductPrice.error = "Required Field"
@@ -182,5 +199,13 @@ class AddProductFragment : Fragment() {
             return false;
         }
         return true;
+    }
+
+    override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+        productType = productTypes[p2]
+    }
+
+    override fun onNothingSelected(p0: AdapterView<*>?) {
+        productType = productTypes[0];
     }
 }

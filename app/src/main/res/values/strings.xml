@@ -4,4 +4,12 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="fab_description">Add Product</string>
     <string name="search_hint">Search for products</string>
+    <string-array name="product_type">
+        <item>Others</item>
+        <item>Electronics</item>
+        <item>Grocery</item>
+        <item>Beverages</item>
+        <item>Clothing</item>
+        <item>Toys</item>
+    </string-array>
 </resources>
